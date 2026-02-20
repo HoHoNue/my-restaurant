@@ -10,11 +10,11 @@ import {
   Settings, MapPin, Utensils, Clock, Plus, Trash2, 
   Save, Upload, X, Sparkles, Loader2, ChevronRight, 
   ChevronLeft, Star, Heart, ExternalLink, MessageSquare, Quote, 
-  LayoutGrid, Menu as MenuIcon, Info, Bell
+  LayoutGrid, Menu as MenuIcon, Info, Bell, Map as MapIcon
 } from 'lucide-react';
 
-// --- [사장님 설정] 관리자 접속 비밀 코드 ---
-const ADMIN_PASSCODE = "1234"; 
+// --- [사장님 설정] 관리자 접속 비밀 코드 (8자리) ---
+const ADMIN_PASSCODE = "12345678"; 
 
 // Firebase 설정
 const firebaseConfig = {
@@ -52,6 +52,8 @@ const App = () => {
     introImg: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&q=80&w=1200",
     introText: "30년 세월, 변함없는 손맛으로 빚어낸 정통 중화요리의 정수. 귀한 분을 모시는 마음으로 정성을 다하겠습니다.",
     naverReviewUrl: "https://m.place.naver.com", 
+    naverMapUrl: "", // 네이버 지도 링크 필드 추가
+    address: "서울특별시 강남구 맛집로 88길 1층 청궁",
     categories: ["전체", "면류", "요리류", "세트메뉴"],
     openingHours: {
       sun: { open: "11:00", close: "21:00", active: true },
@@ -144,16 +146,16 @@ const App = () => {
       {/* [메인 서비스 화면] */}
       <div className={`w-full ${isAdminMode ? 'hidden' : 'block animate-in fade-in duration-1000'}`}>
         
-        {/* 상단 배너 - 고급스러운 수직 정렬 */}
+        {/* 상단 배너 */}
         <header className="relative h-[60vh] w-full flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
             <img src={settings.introImg} className="w-full h-full object-cover" alt="가게 메인 배경" />
             <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
           </div>
           <div className="relative z-10 text-center px-6 max-w-4xl">
-            <span className="inline-block text-orange-400 text-lg md:text-xl mb-6 tracking-widest font-bold">정성으로 빚어낸 전통의 맛</span>
+            <span className="inline-block text-orange-400 text-lg md:text-xl mb-6 tracking-widest font-black">정성으로 빚어낸 전통의 맛</span>
             <h1 className="text-6xl md:text-9xl font-black text-white mb-8 tracking-tighter drop-shadow-2xl italic">{settings.name}</h1>
-            <p className="text-lg md:text-2xl text-white/90 font-bold max-w-2xl mx-auto leading-relaxed break-keep">
+            <p className="text-lg md:text-2xl text-white/90 font-black max-w-2xl mx-auto leading-relaxed break-keep">
               {settings.introText}
             </p>
           </div>
@@ -170,7 +172,7 @@ const App = () => {
                 </div>
                 <div className="text-center md:text-left">
                   <h3 className="text-2xl font-black mb-3 text-orange-600">가게 공지사항</h3>
-                  <p className="text-xl md:text-2xl font-bold leading-relaxed break-keep text-gray-800">
+                  <p className="text-xl md:text-2xl font-black leading-relaxed break-keep text-gray-800">
                     {settings.notice}
                   </p>
                 </div>
@@ -183,7 +185,7 @@ const App = () => {
             <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-10 text-center md:text-left">
               <div className="flex flex-col items-center md:items-start">
                 <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tight italic text-gray-900">대표 요리</h2>
-                <p className="text-gray-400 text-lg font-bold">청궁이 자랑하는 최고의 메뉴들을 만나보세요.</p>
+                <p className="text-gray-400 text-lg font-black">청궁이 자랑하는 최고의 메뉴들을 만나보세요.</p>
               </div>
               <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 max-w-full justify-center">
                 {settings.categories.map(cat => (
@@ -198,36 +200,42 @@ const App = () => {
               </div>
             </div>
 
-            <div className="relative group w-full">
-              <div ref={menuScrollRef} className="flex overflow-x-auto gap-10 pb-16 px-4 -mx-4 snap-x snap-mandatory no-scrollbar cursor-grab active:cursor-grabbing">
+            <div className="relative w-full px-4 md:px-10">
+              <button onClick={() => scrollMenu('left')} className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-3 md:p-4 bg-white border border-gray-100 rounded-full shadow-xl hover:bg-black hover:text-white transition-all"><ChevronLeft size={24}/></button>
+
+              <div ref={menuScrollRef} className="flex overflow-x-auto gap-8 md:gap-12 pb-16 no-scrollbar snap-x snap-mandatory cursor-grab active:cursor-grabbing">
                 {filteredMenu.map(item => (
-                  <div key={item.id} onDoubleClick={() => toggleLike(item.id)} className="flex-none w-[300px] md:w-[400px] snap-center group/card">
-                    <div className="relative aspect-[4/5] rounded-[4rem] overflow-hidden mb-8 shadow-xl transition-all duration-700 group-hover/card:shadow-orange-100/50">
-                      <img src={item.img || "https://via.placeholder.com/800"} className="w-full h-full object-cover transition-transform duration-1000 group-hover/card:scale-110" alt={item.name} />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover/card:opacity-90 transition-opacity"></div>
-                      <button onClick={() => toggleLike(item.id)} className={`absolute top-8 right-8 p-5 rounded-full glass transition-all ${myLikes.includes(item.id) ? 'text-red-500 scale-110' : 'text-gray-900 opacity-0 group-hover/card:opacity-100'}`}><Heart size={24} fill={myLikes.includes(item.id) ? "currentColor" : "none"}/></button>
-                      <div className="absolute bottom-10 left-10 right-10 text-white">
+                  <div key={item.id} onDoubleClick={() => toggleLike(item.id)} className="flex-none w-[280px] md:w-[380px] snap-center group/card flex flex-col">
+                    <div className="relative aspect-[4/5] rounded-[4rem] overflow-hidden mb-8 shadow-xl transition-all duration-1000 group-hover/card:scale-105 group-hover/card:shadow-orange-100/50">
+                      <img src={item.img || "https://via.placeholder.com/800"} className="w-full h-full object-cover" alt={item.name} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
+                      <button onClick={() => toggleLike(item.id)} className={`absolute top-8 right-8 p-5 rounded-full glass transition-all ${myLikes.includes(item.id) ? 'text-red-500 scale-110' : 'text-gray-900'}`}><Heart size={24} fill={myLikes.includes(item.id) ? "currentColor" : "none"}/></button>
+                      <div className="absolute bottom-10 left-10 right-10 text-white pointer-events-none">
                         <span className="text-xs font-black uppercase tracking-widest text-orange-400 mb-3 block">{item.category}</span>
                         <h3 className="text-3xl font-black mb-4 tracking-tight leading-tight">{item.name}</h3>
-                        <p className="text-sm font-bold leading-relaxed line-clamp-2 italic opacity-0 group-hover/card:opacity-100 transition-all translate-y-2 group-hover/card:translate-y-0">{item.desc || "정성을 다해 준비한 일품 요리입니다."}</p>
                       </div>
                     </div>
-                    <div className="px-6 flex justify-between items-center">
-                      <span className="text-3xl font-black italic tracking-tighter text-gray-900"><span className="text-base not-italic mr-1 text-gray-300">₩</span>{item.price}</span>
-                      <div className="flex items-center gap-2 bg-white border border-gray-100 px-4 py-1.5 rounded-full shadow-sm">
-                        <Heart size={14} className="text-red-400" fill="currentColor"/>
-                        <span className="text-sm text-gray-400 font-black">{item.likes || 0}</span>
+                    <div className="px-4 flex flex-col flex-grow">
+                      <div className="min-h-[4.5rem]">
+                        <p className="text-gray-500 text-base font-black leading-relaxed break-keep mb-6">
+                          {item.desc || "정성을 다해 준비한 일품 요리입니다."}
+                        </p>
+                      </div>
+                      <div className="flex justify-between items-center mt-auto">
+                        <span className="text-3xl font-black italic tracking-tighter text-gray-900">
+                          <span className="text-base not-italic mr-1 text-gray-300 font-bold uppercase">KRW</span>{item.price}
+                        </span>
+                        <div className="flex items-center gap-2 bg-white border border-gray-100 px-4 py-1.5 rounded-full shadow-sm">
+                          <Heart size={14} className="text-red-400" fill="currentColor"/>
+                          <span className="text-sm text-gray-400 font-black">{item.likes || 0}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-              {filteredMenu.length > 2 && (
-                <div className="hidden lg:flex gap-4 absolute -top-24 right-0">
-                  <button onClick={() => scrollMenu('left')} className="p-4 rounded-full border border-gray-200 hover:bg-black hover:text-white transition-all"><ChevronLeft size={20}/></button>
-                  <button onClick={() => scrollMenu('right')} className="p-4 rounded-full border border-gray-200 hover:bg-black hover:text-white transition-all"><ChevronRight size={20}/></button>
-                </div>
-              )}
+
+              <button onClick={() => scrollMenu('right')} className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-3 md:p-4 bg-white border border-gray-100 rounded-full shadow-xl hover:bg-black hover:text-white transition-all"><ChevronRight size={24}/></button>
             </div>
           </section>
 
@@ -235,8 +243,8 @@ const App = () => {
           <section className="w-full relative overflow-hidden py-20">
             <div className="text-center mb-24 flex flex-col items-center gap-6">
               <div className="flex flex-col items-center">
-                <h2 className="text-5xl md:text-7xl font-black mb-4 tracking-tighter italic text-gray-900">방문 후기</h2>
-                <p className="text-gray-400 text-lg font-bold tracking-widest">실제 방문 고객님들의 생생한 이야기</p>
+                <h2 className="text-5xl md:text-7xl font-black mb-4 tracking-tighter italic text-gray-900 font-black">손님들의 생생한 후기</h2>
+                <p className="text-gray-400 text-lg font-black tracking-widest uppercase">직접 맛보고 남겨주신 소중한 기록들</p>
               </div>
               
               {settings.naverReviewUrl && (
@@ -262,24 +270,33 @@ const App = () => {
                       <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center font-black text-orange-600 text-2xl border border-gray-50 shadow-inner">{rev.author?.[0]}</div>
                       <div><div className="font-black text-2xl">{rev.author}</div><div className="flex text-orange-400 text-sm mt-1">{"★".repeat(rev.rating || 5)}</div></div>
                     </div>
-                    <p className="text-gray-700 italic break-keep leading-relaxed text-xl md:text-2xl font-bold">"{rev.text}"</p>
+                    <p className="text-gray-700 italic break-keep leading-relaxed text-xl md:text-2xl font-black">"{rev.text}"</p>
                   </div>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* 오시는 길 */}
+          {/* 오시는 길 - 네이버 지도 링크 연동 강화 */}
           <section id="map-area" className="w-full max-w-5xl space-y-16 text-center">
             <div className="flex flex-col items-center gap-10 border-b border-gray-100 pb-16">
-              <h2 className="text-5xl md:text-7xl font-black tracking-tighter italic text-gray-900">오시는 길</h2>
-              <p className="text-gray-400 text-xl font-bold">서울특별시 강남구 맛집로 88길 1층 청궁</p>
-              {settings.naverReviewUrl && (
-                <a href={settings.naverReviewUrl} target="_blank" rel="noopener noreferrer" className="px-14 py-6 bg-black text-white rounded-full text-lg font-black hover:bg-orange-600 transition-all shadow-2xl flex items-center gap-3">
-                  지도에서 위치 확인 <ExternalLink size={20}/>
+              <h2 className="text-5xl md:text-7xl font-black tracking-tighter italic text-gray-900 font-black text-6xl">찾아오시는 길</h2>
+              <p className="text-gray-900 text-2xl font-black underline decoration-orange-300 underline-offset-8">{settings.address}</p>
+              
+              {/* 실제 지도 링크 연동 */}
+              {settings.naverMapUrl && (
+                <a 
+                  href={settings.naverMapUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="px-14 py-6 bg-black text-white rounded-full text-xl font-black hover:bg-orange-600 transition-all shadow-2xl flex items-center gap-3 active:scale-95"
+                >
+                  <MapIcon size={24} className="text-orange-400" />
+                  네이버 지도로 길찾기 <ChevronRight size={20}/>
                 </a>
               )}
             </div>
+            
             <div className="aspect-[21/9] bg-white rounded-[5rem] border border-gray-100 shadow-2xl flex flex-col items-center justify-center text-gray-200 relative overflow-hidden group">
               <MapPin size={100} className="text-orange-500 animate-bounce z-10" />
               <div className="absolute inset-0 opacity-10 grayscale group-hover:grayscale-0 transition-all duration-1000">
@@ -291,7 +308,7 @@ const App = () => {
 
         <footer className="w-full bg-white border-t border-gray-50 py-40 text-center px-6">
           <h2 className="text-5xl font-black mb-8 italic opacity-80 tracking-tighter text-gray-900">{settings.name}</h2>
-          <p className="text-gray-300 text-xs font-black tracking-[0.4em] uppercase">1994년부터 이어온 전통의 맛</p>
+          <p className="text-gray-400 text-xs font-black tracking-[0.4em] uppercase font-black">Traditional Taste Excellence Since 1994</p>
         </footer>
       </div>
 
@@ -300,11 +317,12 @@ const App = () => {
         <div className="fixed inset-0 z-[200] bg-[#fcfaf8] overflow-y-auto animate-in slide-in-from-right duration-500">
           <div className="max-w-4xl mx-auto px-6 py-12">
             <header className="sticky top-0 z-50 glass p-8 rounded-[3rem] shadow-xl border border-white mb-16 flex items-center justify-between">
-              <div className="flex items-center gap-4 text-gray-900"><Settings size={28} /><h2 className="text-2xl font-black">관리 센터</h2></div>
-              <button onClick={() => setIsAdminMode(false)} className="p-3 bg-gray-900 text-white rounded-full hover:bg-orange-600 transition-all"><X size={24}/></button>
+              <div className="flex items-center gap-4 text-gray-900"><Settings size={28} /><h2 className="text-2xl font-black">가게 통합 관리 센터</h2></div>
+              <button onClick={() => setIsAdminMode(false)} className="p-3 bg-gray-900 text-white rounded-full hover:bg-orange-600 transition-all shadow-lg"><X size={24}/></button>
             </header>
 
             <div className="space-y-32 pb-40">
+              {/* 관리 메뉴 퀵 링크 */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-gray-900">
                 <button onClick={() => scrollToAdminSection(adminNoticeRef)} className="p-6 bg-white rounded-3xl border border-orange-100 shadow-sm font-black text-orange-600">공지사항</button>
                 <button onClick={() => scrollToAdminSection(adminMenuRef)} className="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm font-black">메뉴 관리</button>
@@ -312,75 +330,89 @@ const App = () => {
                 <button onClick={() => scrollToAdminSection(adminBrandingRef)} className="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm font-black">가게 정보</button>
               </div>
 
+              {/* 공지사항 설정 */}
               <section ref={adminNoticeRef} className="space-y-8 scroll-mt-32">
-                <h3 className="text-2xl font-black flex items-center gap-3"><Bell className="text-orange-600" /> 공지사항 설정</h3>
-                <textarea value={settings.notice} onChange={(e) => setSettings({...settings, notice: e.target.value})} className="w-full p-8 bg-white rounded-[3rem] border-2 border-orange-100 outline-none font-bold text-xl min-h-[150px]" placeholder="메인 공지 문구를 입력하세요." />
+                <h3 className="text-2xl font-black flex items-center gap-3 font-black"><Bell className="text-orange-600" /> 공지사항 설정</h3>
+                <textarea value={settings.notice} onChange={(e) => setSettings({...settings, notice: e.target.value})} className="w-full p-8 bg-white rounded-[3rem] border-2 border-orange-100 outline-none font-black text-xl min-h-[150px] shadow-sm" placeholder="메인 공지 문구를 입력하세요." />
               </section>
 
+              {/* 메뉴 관리 */}
               <section ref={adminMenuRef} className="space-y-8 scroll-mt-32">
-                <h3 className="text-2xl font-black flex items-center gap-3"><Utensils /> 메뉴판 관리</h3>
+                <h3 className="text-2xl font-black flex items-center gap-3 font-black"><Utensils /> 메뉴판 관리</h3>
                 <div className="grid gap-8">
                   {settings.menuItems.map((item, idx) => (
                     <div key={item.id} className="p-10 bg-white rounded-[4rem] border border-gray-100 shadow-sm">
-                      <div className="flex justify-between items-center mb-8"><span className="px-5 py-2 bg-gray-900 text-white rounded-full text-xs font-black">메뉴 #{idx+1}</span><button onClick={() => { const ni = [...settings.menuItems]; ni.splice(idx, 1); setSettings({...settings, menuItems: ni}); }} className="text-red-300 hover:text-red-500"><Trash2 size={24} /></button></div>
+                      <div className="flex justify-between items-center mb-8"><span className="px-5 py-2 bg-gray-900 text-white rounded-full text-xs font-black uppercase">메뉴 #{idx+1}</span><button onClick={() => { const ni = [...settings.menuItems]; ni.splice(idx, 1); setSettings({...settings, menuItems: ni}); }} className="text-red-300 hover:text-red-500 transition-colors"><Trash2 size={24} /></button></div>
                       <div className="grid md:grid-cols-2 gap-8">
                         <input value={item.name} onChange={(e) => { const ni = [...settings.menuItems]; ni[idx].name = e.target.value; setSettings({...settings, menuItems: ni}); }} className="p-5 bg-gray-50 rounded-2xl outline-none font-black text-xl" placeholder="메뉴 이름" />
-                        <input value={item.price} onChange={(e) => { const ni = [...settings.menuItems]; ni[idx].price = e.target.value; setSettings({...settings, menuItems: ni}); }} className="p-5 bg-gray-50 rounded-2xl outline-none font-black text-xl" placeholder="판매 가격" />
+                        <input value={item.price} onChange={(e) => { const ni = [...settings.menuItems]; ni[idx].price = e.target.value; setSettings({...settings, menuItems: ni}); }} className="p-5 bg-gray-50 rounded-2xl outline-none font-black text-xl" placeholder="가격 (원)" />
                       </div>
-                      <textarea value={item.desc} onChange={(e) => { const ni = [...settings.menuItems]; ni[idx].desc = e.target.value; setSettings({...settings, menuItems: ni}); }} className="w-full p-5 bg-gray-50 rounded-2xl outline-none font-bold text-sm mt-4 min-h-[100px]" placeholder="메뉴에 대한 설명을 적어주세요." />
+                      <textarea value={item.desc} onChange={(e) => { const ni = [...settings.menuItems]; ni[idx].desc = e.target.value; setSettings({...settings, menuItems: ni}); }} className="w-full p-5 bg-gray-50 rounded-2xl outline-none font-black text-sm mt-4 min-h-[100px]" placeholder="메뉴 설명을 입력하세요." />
                       <div className="flex items-center gap-6 mt-8">
                         <div className="w-24 h-24 rounded-3xl bg-gray-100 overflow-hidden border shadow-inner shrink-0">{item.img ? <img src={item.img} className="w-full h-full object-cover" /> : <Upload size={32} className="m-auto text-gray-300 h-full"/>}</div>
-                        <label className="px-8 py-4 bg-gray-900 text-white rounded-2xl text-xs font-black cursor-pointer hover:bg-orange-600 transition-all shadow-lg">사진 등록/변경<input type="file" className="hidden" onChange={(e) => { const reader = new FileReader(); reader.onloadend = () => { const ni = [...settings.menuItems]; ni[idx].img = reader.result; setSettings({...settings, menuItems: ni}); }; reader.readAsDataURL(e.target.files[0]); }} /></label>
+                        <label className="px-8 py-4 bg-gray-900 text-white rounded-2xl text-xs font-black cursor-pointer hover:bg-orange-600 transition-all shadow-lg">사진 변경/등록<input type="file" className="hidden" onChange={(e) => { const reader = new FileReader(); reader.onloadend = () => { const ni = [...settings.menuItems]; ni[idx].img = reader.result; setSettings({...settings, menuItems: ni}); }; reader.readAsDataURL(e.target.files[0]); }} /></label>
                       </div>
                     </div>
                   ))}
-                  <button onClick={() => setSettings({...settings, menuItems: [...settings.menuItems, {id: Date.now(), name: "신메뉴", price: "0", desc: "", category: "전체", isRecommended: false, likes: 0}]})} className="w-full py-20 border-2 border-dashed border-gray-100 rounded-[4rem] text-gray-300 hover:text-orange-500 font-black flex items-center justify-center gap-4 text-2xl"><Plus size={40} /> 메뉴 항목 추가</button>
+                  <button onClick={() => setSettings({...settings, menuItems: [...settings.menuItems, {id: Date.now(), name: "신메뉴", price: "0", desc: "", category: "전체", isRecommended: false, likes: 0}]})} className="w-full py-20 border-2 border-dashed border-gray-100 rounded-[4rem] text-gray-300 hover:text-orange-500 font-black flex items-center justify-center gap-4 text-2xl active:scale-95 transition-all"><Plus size={40} /> 메뉴 추가하기</button>
                 </div>
               </section>
 
-              <section ref={adminReviewRef} className="space-y-8 scroll-mt-32">
-                <h3 className="text-2xl font-black flex items-center gap-3"><MessageSquare className="text-green-600" /> 손님 후기 관리</h3>
-                <div className="grid gap-6">
-                  {settings.reviews.map((rev, idx) => (
-                    <div key={idx} className="p-10 bg-white rounded-[4rem] border border-gray-100 shadow-sm space-y-6">
-                      <div className="flex justify-between items-center"><span className="text-xs font-black text-green-600 uppercase">후기 #{idx+1}</span><button onClick={() => { const nr = [...settings.reviews]; nr.splice(idx, 1); setSettings({...settings, reviews: nr}); }} className="text-red-300 hover:text-red-500"><Trash2 size={24}/></button></div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <input value={rev.author} onChange={(e) => { const nr = [...settings.reviews]; nr[idx].author = e.target.value; setSettings({...settings, reviews: nr}); }} placeholder="손님 이름" className="p-5 bg-gray-50 rounded-2xl outline-none font-bold" />
-                        <select value={rev.rating || 5} onChange={(e) => { const nr = [...settings.reviews]; nr[idx].rating = parseInt(e.target.value); setSettings({...settings, reviews: nr}); }} className="p-5 bg-gray-50 rounded-2xl outline-none font-bold">
-                          <option value="5">⭐⭐⭐⭐⭐ (5점)</option>
-                          <option value="4">⭐⭐⭐⭐ (4점)</option>
-                          <option value="3">⭐⭐⭐ (3점)</option>
-                          <option value="2">⭐⭐ (2점)</option>
-                          <option value="1">⭐ (1점)</option>
-                        </select>
-                      </div>
-                      <textarea value={rev.text} onChange={(e) => { const nr = [...settings.reviews]; nr[idx].text = e.target.value; setSettings({...settings, reviews: nr}); }} className="w-full p-6 bg-gray-50 rounded-2xl outline-none font-medium min-h-[120px]" placeholder="후기 본문을 입력하세요." />
-                    </div>
-                  ))}
-                  <button onClick={() => setSettings({...settings, reviews: [...settings.reviews, {author: "단골 손님", rating: 5, text: ""}]})} className="w-full py-16 border-2 border-dashed border-gray-100 rounded-[4rem] text-gray-300 hover:text-green-500 font-black flex items-center justify-center gap-4 text-xl"><Plus size={32} /> 후기 수동 추가</button>
-                </div>
-              </section>
-
+              {/* 가게 정보 설정 - 네이버 지도 및 배너 설정 */}
               <section ref={adminBrandingRef} className="space-y-8 scroll-mt-32">
-                <h3 className="text-2xl font-black flex items-center gap-3"><Info className="text-blue-600" /> 가게 정보 및 네이버 링크</h3>
-                <div className="p-10 bg-white rounded-[4rem] border border-gray-100 shadow-sm space-y-10 text-gray-900">
-                  <div className="space-y-4">
-                    <label className="text-xs font-black text-gray-300 uppercase ml-2 tracking-widest">네이버 플레이스 주소</label>
-                    <input value={settings.naverReviewUrl} onChange={(e) => setSettings({...settings, naverReviewUrl: e.target.value})} className="w-full p-6 bg-gray-50 rounded-[2.5rem] outline-none font-bold text-lg shadow-inner" placeholder="https://m.place.naver.com/restaurant/..." />
+                <h3 className="text-2xl font-black flex items-center gap-3 font-black"><Info className="text-blue-600" /> 가게 기본 정보 및 배너 설정</h3>
+                <div className="p-10 bg-white rounded-[4rem] border border-gray-100 shadow-sm space-y-12 text-gray-900">
+                  
+                  {/* 상단 배너 이미지 변경 */}
+                  <div className="space-y-6">
+                    <label className="text-xs font-black text-gray-300 uppercase ml-2 tracking-widest uppercase">홈페이지 상단 배너 이미지</label>
+                    <div className="flex flex-col md:flex-row items-center gap-8 bg-gray-50 p-8 rounded-[3rem]">
+                      <div className="w-full md:w-72 h-40 rounded-2xl overflow-hidden border shadow-sm shrink-0 bg-white">
+                        <img src={settings.introImg} className="w-full h-full object-cover" alt="배너 미리보기" />
+                      </div>
+                      <div className="flex flex-col gap-5 w-full">
+                        <p className="text-sm font-black text-gray-500">가게의 첫인상을 결정하는 메인 이미지를 업로드해 주세요.</p>
+                        <label className="px-10 py-5 bg-black text-white rounded-2xl text-sm font-black cursor-pointer hover:bg-orange-600 transition-all shadow-xl text-center active:scale-95">배너 사진 변경하기
+                          <input type="file" className="hidden" onChange={(e) => { 
+                            const reader = new FileReader(); 
+                            reader.onloadend = () => setSettings({...settings, introImg: reader.result}); 
+                            reader.readAsDataURL(e.target.files[0]); 
+                          }} />
+                        </label>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-4">
-                    <label className="text-xs font-black text-gray-300 uppercase ml-2 tracking-widest">가게 상호명</label>
-                    <input value={settings.name} onChange={(e) => setSettings({...settings, name: e.target.value})} className="w-full p-6 bg-gray-50 rounded-[2.5rem] outline-none font-black text-3xl shadow-inner" />
+
+                  <div className="grid md:grid-cols-2 gap-8 pt-6 border-t border-gray-50">
+                    <div className="space-y-4">
+                      <label className="text-xs font-black text-gray-300 uppercase ml-2 tracking-widest uppercase">네이버 지도 링크 (길찾기용)</label>
+                      <input value={settings.naverMapUrl} onChange={(e) => setSettings({...settings, naverMapUrl: e.target.value})} className="w-full p-6 bg-gray-50 rounded-[2.5rem] outline-none font-black text-sm shadow-inner" placeholder="네이버 지도의 공유 버튼을 눌러 링크를 붙여넣으세요." />
+                    </div>
+                    <div className="space-y-4">
+                      <label className="text-xs font-black text-gray-300 uppercase ml-2 tracking-widest uppercase">네이버 리뷰 페이지 링크</label>
+                      <input value={settings.naverReviewUrl} onChange={(e) => setSettings({...settings, naverReviewUrl: e.target.value})} className="w-full p-6 bg-gray-50 rounded-[2.5rem] outline-none font-black text-sm shadow-inner" placeholder="네이버 리뷰 페이지 주소를 입력하세요." />
+                    </div>
                   </div>
+
                   <div className="space-y-4">
-                    <label className="text-xs font-black text-gray-300 uppercase ml-2 tracking-widest">메인 소개글</label>
-                    <textarea value={settings.introText} onChange={(e) => setSettings({...settings, introText: e.target.value})} className="w-full p-8 bg-gray-50 rounded-[3rem] outline-none font-bold text-lg min-h-[150px] shadow-inner" />
+                    <label className="text-xs font-black text-gray-300 uppercase ml-2 tracking-widest uppercase">가게 주소 텍스트</label>
+                    <input value={settings.address} onChange={(e) => setSettings({...settings, address: e.target.value})} className="w-full p-6 bg-gray-50 rounded-[2.5rem] outline-none font-black text-xl shadow-inner" placeholder="가게의 정확한 주소를 입력하세요." />
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-xs font-black text-gray-300 uppercase ml-2 tracking-widest uppercase">가게 상호명</label>
+                    <input value={settings.name} onChange={(e) => setSettings({...settings, name: e.target.value})} className="w-full p-6 bg-gray-50 rounded-[2.5rem] outline-none font-black text-4xl shadow-inner text-orange-600 font-black" />
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-xs font-black text-gray-300 uppercase ml-2 tracking-widest uppercase">대표 홍보 문구</label>
+                    <textarea value={settings.introText} onChange={(e) => setSettings({...settings, introText: e.target.value})} className="w-full p-10 bg-gray-50 rounded-[4rem] outline-none font-black text-xl min-h-[200px] shadow-inner leading-relaxed" placeholder="손님들께 전할 매력적인 소개글을 작성하세요." />
                   </div>
                 </div>
               </section>
 
-              <button onClick={() => { saveSettings(settings); setIsAdminMode(false); }} className="w-full bg-orange-600 text-white py-10 rounded-[4rem] font-black text-3xl hover:bg-black shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-5 uppercase">
-                <Save size={40}/> 전체 설정 저장 후 홈페이지 반영
+              <button onClick={() => { saveSettings(settings); setIsAdminMode(false); }} className="w-full bg-orange-600 text-white py-12 rounded-[5rem] font-black text-4xl hover:bg-black shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-6 uppercase shadow-orange-100">
+                <Save size={48}/> 전체 설정 저장 및 즉시 반영
               </button>
             </div>
           </div>
@@ -389,13 +421,22 @@ const App = () => {
 
       {/* [관리자 로그인 모달] */}
       {isAuthModalOpen && (
-        <div className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-6 animate-in fade-in duration-300">
           <div className="bg-white/10 w-full max-w-sm rounded-[4rem] p-16 text-center border border-white/10 shadow-2xl">
-            <h3 className="text-3xl font-black text-white mb-12 tracking-widest uppercase">관리자 접속</h3>
+            <h3 className="text-3xl font-black text-white mb-12 tracking-widest uppercase italic font-black">ADMIN ACCESS</h3>
             <form onSubmit={handleVerifyPasscode} className="space-y-12">
-              <input type="password" required autoFocus value={passcodeInput} onChange={(e)=>setPasscodeInput(e.target.value)} className="w-full bg-transparent border-b-2 border-white/20 p-4 text-center text-6xl font-black text-white outline-none focus:border-orange-600 transition-all tracking-[0.5em]" placeholder="••••" />
+              <input 
+                type="password" 
+                required 
+                autoFocus 
+                value={passcodeInput} 
+                onChange={(e)=>setPasscodeInput(e.target.value)} 
+                className="w-full bg-transparent border-b-2 border-white/20 p-4 text-center text-4xl font-black text-white outline-none focus:border-orange-600 transition-all tracking-[0.3em]" 
+                placeholder="••••••••" 
+                maxLength={8}
+              />
               <div className="space-y-4">
-                <button type="submit" className="w-full bg-white text-black py-6 rounded-full font-black text-xl hover:bg-orange-600 hover:text-white transition-all shadow-xl uppercase">입장하기</button>
+                <button type="submit" className="w-full bg-white text-black py-6 rounded-full font-black text-xl hover:bg-orange-600 hover:text-white transition-all shadow-xl uppercase font-black">접속하기</button>
                 <button type="button" onClick={()=>setIsAuthModalOpen(false)} className="w-full text-white/30 text-xs font-bold hover:text-white uppercase tracking-widest">취소</button>
               </div>
             </form>
@@ -405,7 +446,7 @@ const App = () => {
 
       {/* 관리자 진입 버튼 */}
       {!isAdminMode && (
-        <button onClick={() => setIsAuthModalOpen(true)} className="fixed bottom-10 right-10 p-5 text-gray-300 hover:text-gray-900 transition-all z-[100] opacity-5 hover:opacity-100 bg-white/30 backdrop-blur rounded-full border border-white/30 shadow-2xl"><Settings size={20} /></button>
+        <button onClick={() => setIsAuthModalOpen(true)} className="fixed bottom-10 right-10 p-5 text-gray-300 hover:text-gray-900 transition-all z-[100] opacity-5 hover:opacity-100 bg-white/30 backdrop-blur rounded-full border border-white/30 shadow-2xl transition-opacity duration-500"><Settings size={20} /></button>
       )}
     </div>
   );
