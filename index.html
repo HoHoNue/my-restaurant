@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
     <title>맛있는 메뉴판 - 청궁</title>
-    <!-- 디자인이 안 나오는 문제를 해결하기 위해 테일윈드를 직접 불러옵니다 -->
+    <!-- 디자인 엔진 불러오기 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
-      body { font-family: 'Noto Sans KR', sans-serif; }
-      .break-keep { word-break: keep-all; }
+      body { font-family: 'Noto Sans KR', sans-serif; background-color: #fafafa; }
       .no-scrollbar::-webkit-scrollbar { display: none; }
+      .break-keep { word-break: keep-all; }
       @keyframes scrollMarquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
       .animate-marquee { display: flex; width: max-content; animation: scrollMarquee 40s linear infinite; }
       .animate-marquee:hover { animation-play-state: paused; }
@@ -19,7 +19,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- main.jsx를 실행하도록 설정 -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
