@@ -1,23 +1,96 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="h-full scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-    <title>맛있는 메뉴판 - 청궁</title>
-    <!-- 디자인 엔진 불러오기 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>청궁(靑宮) | 프리미엄 고메 다이닝</title>
+    
+    <!-- 전문가급 디자인 엔진 -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 하이엔드 폰트 조합 -->
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
-      body { font-family: 'Noto Sans KR', sans-serif; background-color: #fafafa; }
-      .no-scrollbar::-webkit-scrollbar { display: none; }
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,900&display=swap');
+      
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      body { 
+        font-family: 'Noto Sans KR', sans-serif; 
+        background-color: #fcfaf8; /* 감각적인 미색 배경 */
+        -webkit-font-smoothing: antialiased;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* 가로 중앙 정렬 */
+      }
+
+      /* 루트 컨테이너가 항상 중앙을 유지하도록 설정 */
+      #root {
+        width: 100%;
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* 한글 줄바꿈 최적화 */
       .break-keep { word-break: keep-all; }
-      @keyframes scrollMarquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-      .animate-marquee { display: flex; width: max-content; animation: scrollMarquee 40s linear infinite; }
-      .animate-marquee:hover { animation-play-state: paused; }
+      
+      /* 스크롤바 커스텀 */
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+
+      /* 리뷰 무한 슬라이드 */
+      @keyframes scrollMarquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+      .animate-marquee {
+        display: flex;
+        width: max-content;
+        animation: scrollMarquee 40s linear infinite;
+      }
+
+      /* 트렌디한 유리창 효과 */
+      .glass {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      /* 부드러운 이미지 줌 */
+      .img-hover-zoom {
+        transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .group:hover .img-hover-zoom {
+        transform: scale(1.08);
+      }
     </style>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                main: '#ea580c',
+                dark: '#1a1a1a',
+              }
+            },
+            fontFamily: {
+              serif: ['Playfair Display', 'serif'],
+            }
+          }
+        }
+      }
+    </script>
   </head>
-  <body>
+  <body class="w-full overflow-x-hidden">
+    <!-- 가로 정렬의 핵심인 root div -->
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
